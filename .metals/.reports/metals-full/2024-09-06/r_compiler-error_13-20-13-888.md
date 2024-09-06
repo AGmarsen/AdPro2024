@@ -1,3 +1,21 @@
+file:///C:/Users/thorc/OneDrive/Dokumenter/CS%201.%20Semester/Advanced%20Programming/2024-adpro/02-adt/Exercises.scala
+### java.lang.AssertionError: NoDenotation.owner
+
+occurred in the presentation compiler.
+
+presentation compiler configuration:
+Scala version: 3.3.3
+Classpath:
+<HOME>\AppData\Local\Coursier\cache\v1\https\repo1.maven.org\maven2\org\scala-lang\scala3-library_3\3.3.3\scala3-library_3-3.3.3.jar [exists ], <HOME>\AppData\Local\Coursier\cache\v1\https\repo1.maven.org\maven2\org\scala-lang\scala-library\2.13.12\scala-library-2.13.12.jar [exists ]
+Options:
+
+
+
+action parameters:
+offset: 3531
+uri: file:///C:/Users/thorc/OneDrive/Dokumenter/CS%201.%20Semester/Advanced%20Programming/2024-adpro/02-adt/Exercises.scala
+text:
+```scala
 // Advanced Programming, A. Wąsowski, IT University of Copenhagen
 // Based on Functional Programming in Scala, 2nd Edition
 
@@ -116,34 +134,38 @@ object List:
 
   def addPairwise (l: List[Int], r: List[Int]): List[Int] = 
     @annotation.tailrec
-    def f (a: List[Int], b: List[Int], c: List[Int] => List[Int]) : List[Int] = (a, b) match
-      case (Nil, x) => c(Nil)
-      case (x, Nil) => c(Nil)
-      case (Cons(h1, t1), Cons(h2, t2)) => f(t1, t2, x => c(Cons(h1 + h2, x)))
+    def f (a: List[Int], b: List[Int], c: Int => List[Int]) : List[Int] = (a, b) match
+      case (Nil, _) => c()
+      case (_, Nil) => c()
+      case (Cons(h1, t1), Cons(h2, t2)) => f(t1, t2, (@@h1 + h2 => )
 
-    f(l, r, identity)
+    f(l, r, Nil)
 
   // Exercise 17
 
-  def zipWith[A, B, C] (l: List[A], r: List[B], f: (A,B) => C): List[C] = 
-    @annotation.tailrec
-    def aux (a: List[A], b: List[B], c: List[C] => List[C]) : List[C] = (a, b) match
-      case (Nil, x) => c(Nil)
-      case (x, Nil) => c(Nil)
-      case (Cons(h1, t1), Cons(h2, t2)) => aux(t1, t2, x => c(Cons(f(h1, h2), x)))
-
-    aux(l, r, identity)
+  def zipWith[A, B, C] (l: List[A], r: List[B], f: (A,B) => C): List[C] = ???
 
   // Exercise 18
 
-  def hasSubsequence[A] (sup: List[A], sub: List[A]): Boolean = 
-    def hasPrefix (l: List[A], pref: List[A]) : Boolean = (l, pref) match 
-      case (_, Nil) => true
-      case (Cons(h1, t1), Cons(h2, t2)) if h1 == h2 => hasPrefix(t1, t2)
-      case _ => false
+  def hasSubsequence[A] (sup: List[A], sub: List[A]): Boolean = ???
 
-    (sup, sub) match
-      case (_, Nil) => true
-      case (Nil, _) => false
-      case (s1, s2) if hasPrefix(s1, s2) => true
-      case (Cons(_, t), s) => hasSubsequence(t, s)
+```
+
+
+
+#### Error stacktrace:
+
+```
+dotty.tools.dotc.core.SymDenotations$NoDenotation$.owner(SymDenotations.scala:2607)
+	scala.meta.internal.pc.SignatureHelpProvider$.isValid(SignatureHelpProvider.scala:83)
+	scala.meta.internal.pc.SignatureHelpProvider$.notCurrentApply(SignatureHelpProvider.scala:94)
+	scala.meta.internal.pc.SignatureHelpProvider$.$anonfun$1(SignatureHelpProvider.scala:48)
+	scala.collection.StrictOptimizedLinearSeqOps.dropWhile(LinearSeq.scala:280)
+	scala.collection.StrictOptimizedLinearSeqOps.dropWhile$(LinearSeq.scala:278)
+	scala.collection.immutable.List.dropWhile(List.scala:79)
+	scala.meta.internal.pc.SignatureHelpProvider$.signatureHelp(SignatureHelpProvider.scala:48)
+	scala.meta.internal.pc.ScalaPresentationCompiler.signatureHelp$$anonfun$1(ScalaPresentationCompiler.scala:435)
+```
+#### Short summary: 
+
+java.lang.AssertionError: NoDenotation.owner

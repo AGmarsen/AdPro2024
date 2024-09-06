@@ -1,3 +1,21 @@
+file:///C:/Users/thorc/OneDrive/Dokumenter/CS%201.%20Semester/Advanced%20Programming/2024-adpro/02-adt/Exercises.scala
+### java.nio.file.InvalidPathException: Illegal char <:> at index 3: jar:file:///C:/Users/thorc/AppData/Local/Coursier/cache/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.12/scala-library-2.13.12-sources.jar!/scala/Tuple2.scala
+
+occurred in the presentation compiler.
+
+presentation compiler configuration:
+Scala version: 3.3.3
+Classpath:
+<HOME>\AppData\Local\Coursier\cache\v1\https\repo1.maven.org\maven2\org\scala-lang\scala3-library_3\3.3.3\scala3-library_3-3.3.3.jar [exists ], <HOME>\AppData\Local\Coursier\cache\v1\https\repo1.maven.org\maven2\org\scala-lang\scala-library\2.13.12\scala-library-2.13.12.jar [exists ]
+Options:
+
+
+
+action parameters:
+offset: 3391
+uri: file:///C:/Users/thorc/OneDrive/Dokumenter/CS%201.%20Semester/Advanced%20Programming/2024-adpro/02-adt/Exercises.scala
+text:
+```scala
 // Advanced Programming, A. Wąsowski, IT University of Copenhagen
 // Based on Functional Programming in Scala, 2nd Edition
 
@@ -115,35 +133,44 @@ object List:
   // Exercise 16
 
   def addPairwise (l: List[Int], r: List[Int]): List[Int] = 
-    @annotation.tailrec
-    def f (a: List[Int], b: List[Int], c: List[Int] => List[Int]) : List[Int] = (a, b) match
-      case (Nil, x) => c(Nil)
-      case (x, Nil) => c(Nil)
-      case (Cons(h1, t1), Cons(h2, t2)) => f(t1, t2, x => c(Cons(h1 + h2, x)))
+    def f (a: List[Int], b: List[Int], ac: List[Int]) : List[Int] =
+      (a, b) m@@
 
-    f(l, r, identity)
+    f(l, r, Nil)
 
   // Exercise 17
 
-  def zipWith[A, B, C] (l: List[A], r: List[B], f: (A,B) => C): List[C] = 
-    @annotation.tailrec
-    def aux (a: List[A], b: List[B], c: List[C] => List[C]) : List[C] = (a, b) match
-      case (Nil, x) => c(Nil)
-      case (x, Nil) => c(Nil)
-      case (Cons(h1, t1), Cons(h2, t2)) => aux(t1, t2, x => c(Cons(f(h1, h2), x)))
-
-    aux(l, r, identity)
+  def zipWith[A, B, C] (l: List[A], r: List[B], f: (A,B) => C): List[C] = ???
 
   // Exercise 18
 
-  def hasSubsequence[A] (sup: List[A], sub: List[A]): Boolean = 
-    def hasPrefix (l: List[A], pref: List[A]) : Boolean = (l, pref) match 
-      case (_, Nil) => true
-      case (Cons(h1, t1), Cons(h2, t2)) if h1 == h2 => hasPrefix(t1, t2)
-      case _ => false
+  def hasSubsequence[A] (sup: List[A], sub: List[A]): Boolean = ???
 
-    (sup, sub) match
-      case (_, Nil) => true
-      case (Nil, _) => false
-      case (s1, s2) if hasPrefix(s1, s2) => true
-      case (Cons(_, t), s) => hasSubsequence(t, s)
+```
+
+
+
+#### Error stacktrace:
+
+```
+java.base/sun.nio.fs.WindowsPathParser.normalize(WindowsPathParser.java:182)
+	java.base/sun.nio.fs.WindowsPathParser.parse(WindowsPathParser.java:153)
+	java.base/sun.nio.fs.WindowsPathParser.parse(WindowsPathParser.java:77)
+	java.base/sun.nio.fs.WindowsPath.parse(WindowsPath.java:92)
+	java.base/sun.nio.fs.WindowsFileSystem.getPath(WindowsFileSystem.java:232)
+	java.base/java.nio.file.Path.of(Path.java:147)
+	java.base/java.nio.file.Paths.get(Paths.java:69)
+	scala.meta.io.AbsolutePath$.apply(AbsolutePath.scala:58)
+	scala.meta.internal.metals.MetalsSymbolSearch.$anonfun$definitionSourceToplevels$2(MetalsSymbolSearch.scala:70)
+	scala.Option.map(Option.scala:242)
+	scala.meta.internal.metals.MetalsSymbolSearch.definitionSourceToplevels(MetalsSymbolSearch.scala:69)
+	scala.meta.internal.pc.completions.CaseKeywordCompletion$.scala$meta$internal$pc$completions$CaseKeywordCompletion$$$sortSubclasses(MatchCaseCompletions.scala:331)
+	scala.meta.internal.pc.completions.CaseKeywordCompletion$.matchContribute(MatchCaseCompletions.scala:279)
+	scala.meta.internal.pc.completions.Completions.advancedCompletions(Completions.scala:388)
+	scala.meta.internal.pc.completions.Completions.completions(Completions.scala:184)
+	scala.meta.internal.pc.completions.CompletionProvider.completions(CompletionProvider.scala:89)
+	scala.meta.internal.pc.ScalaPresentationCompiler.complete$$anonfun$1(ScalaPresentationCompiler.scala:155)
+```
+#### Short summary: 
+
+java.nio.file.InvalidPathException: Illegal char <:> at index 3: jar:file:///C:/Users/thorc/AppData/Local/Coursier/cache/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.12/scala-library-2.13.12-sources.jar!/scala/Tuple2.scala
