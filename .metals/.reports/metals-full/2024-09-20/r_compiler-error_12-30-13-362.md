@@ -1,9 +1,25 @@
+file:///C:/Users/thorc/OneDrive/Dokumenter/CS%201.%20Semester/Advanced%20Programming/2024-adpro/04-lazy-list/Exercises.scala
+### java.lang.AssertionError: NoDenotation.owner
+
+occurred in the presentation compiler.
+
+presentation compiler configuration:
+Scala version: 3.3.3
+Classpath:
+<HOME>\AppData\Local\Coursier\cache\v1\https\repo1.maven.org\maven2\org\scala-lang\scala3-library_3\3.3.3\scala3-library_3-3.3.3.jar [exists ], <HOME>\AppData\Local\Coursier\cache\v1\https\repo1.maven.org\maven2\org\scala-lang\scala-library\2.13.12\scala-library-2.13.12.jar [exists ]
+Options:
+
+
+
+action parameters:
+offset: 2547
+uri: file:///C:/Users/thorc/OneDrive/Dokumenter/CS%201.%20Semester/Advanced%20Programming/2024-adpro/04-lazy-list/Exercises.scala
+text:
+```scala
 // Advanced Programming, A. Wąsowski, IT University of Copenhagen
 // Based on Functional Programming in Scala, 2nd Edition
 
 package adpro.lazyList
-
-import scala.compiletime.ops.boolean
 
 // Note: we are using our own lazy lists, not the standard library
 
@@ -69,7 +85,7 @@ enum LazyList[+A]:
   def toList: List[A] = 
     this match
       case Empty => Nil
-      case Cons(h, t) => h() :: t().toList
+      case Cons(h, t) => List.Cons[A@@(h(), t().toList())
     
 
   // Test in the REPL, for instance: LazyList(1,2,3).toList 
@@ -78,71 +94,47 @@ enum LazyList[+A]:
   // Exercise 3
 
   def take(n: Int): LazyList[A] = 
-    this match
-      case Cons(h, t) if n > 0 => cons(h(), t().take(n-1))
-      case _ => Empty
-    
+    ???
 
   def drop(n: Int): LazyList[A] = 
-    this match
-      case Cons(h, t) if n > 0 => t().drop(n-1) 
-      case x => x
-    
-  // the reason why naturals.take(1000000000).drop(41).take(10).toList does not mess up the memory is that
-  // take builds a lazy list without evaluating each element. They are are first evaluated when we call toList
-  // and at this point we have only taken 10 elements
+    ???
 
   // Exercise 4
 
   def takeWhile(p: A => Boolean): LazyList[A] = 
-    this match
-      case Cons(h, t) if p(h()) => cons(h(), t().takeWhile(p))
-      case _ => Empty
-    
-  //takeWhile does not mess up for the same reason as take. 
-  //Once we call toList we only calculate the 50 elements from the latest take call
+    ???
 
   // Exercise 5
   
   def forAll(p: A => Boolean): Boolean =
-    this match
-      case Cons(h, t) => p(h()) && t().forAll(p)
-      case Empty => true
-    
+    ???
  
   // Note 1. lazy; tail is never forced if satisfying element found this is
   // because || is non-strict
   // Note 2. this is also tail recursive (because of the special semantics
   // of ||)
   def exists(p: A => Boolean): Boolean = 
-    this match
-      case Cons(h, t) => p(h()) || t().exists(p)
-      case Empty => false
-
-
-  //naturals is an infinit lazylist. This means if you call forAll with a predicate that is always true
-  //it will continue to check the next element in case it is false. Same for exists but opposit (if they are all false).
-  //on a finite lazylist this will of cause not happen, since it is not infinit and will eventually check Empty.
+    ???
 
   // Exercise 6
   
   def takeWhile1(p: A => Boolean): LazyList[A] =
-    this.foldRight(Empty)((a, c) => if p(a) then cons(a, c) else Empty)
+    ???
 
   // Exercise 7
-
+  
   def headOption1: Option[A] = 
-    this.foldRight(None)((a, _) => Some(a))
+    ???
 
   // Exercise 8
   
   // Note: The type is incorrect, you need to fix it
-  def map[B](f: A => B): LazyList[B] = 
-    this.foldRight(Empty)((a, c) => cons(f(a), c))
+  def map(f: Any): LazyList[Int] = 
+    ???
 
   // Note: The type is incorrect, you need to fix it
-  def filter(p: A => Boolean): LazyList[A] = 
-    this.foldRight(Empty)((a, c) => if p(a) then cons(a, c) else c)
+  def filter(p: Any): LazyList[Any] = 
+    ???
 
   /* Note: The type is given correctly for append, because it is more complex.
    * Try to understand the type. The contsraint 'B >: A' requires that B is a
@@ -157,52 +149,32 @@ enum LazyList[+A]:
    * getOrElse last week, and the type of foldRight this week.
    */
   def append[B >: A](that: => LazyList[B]): LazyList[B] = 
-    this.foldRight(that)((a, c) => cons(a, c))
+    ???
 
   // Note: The type is incorrect, you need to fix it
-  def flatMap[B](f: A => LazyList[B]): LazyList[B] = 
-    this.foldRight(Empty)((a, c) => f(a).foldRight(c)((a1, c1) => cons(a1, c1)))
+  def flatMap(f: Any): LazyList[Any] = 
+    ???
 
   // Exercise 9
   // Type answer here
   //
-  // the call to filter does not create a new list where all the elements have been evaluated and filtered
-  // this would happen with a normal list. With a lazylist it continues to be lazy 
-  // until headOption needs to evaluate the first element of the filtered lazylist
-  // this means we only evaluate until we find a match and then ignores the rest
+  // ...
   //
   // Scroll down to Exercise 10 in the companion object below
 
   // Exercise 13
 
   def mapUnfold[B](f: A => B): LazyList[B] =
-    unfold(this)(
-      _ match 
-        case Cons(h, t) => Some((f(h()), t()))
-        case Empty => None
-      )
+    ???
 
   def takeUnfold(n: Int): LazyList[A] =
-    unfold((this, n))((ls, m) =>
-      ls match 
-        case Cons(h, t) if m > 0 => Some((h(), (t(), n-1)))
-        case _ => None
-      )
+    ???
 
   def takeWhileUnfold(p: A => Boolean): LazyList[A] =
-    unfold(this)(
-      _ match 
-        case Cons(h, t) if p(h()) => Some((h(), t()))
-        case _ => None
-      )
+    ???
 
   def zipWith[B >: A, C](ope: (=> B, => B) => C)(bs: LazyList[B]): LazyList[C] =
-    unfold((this, bs))( 
-      _ match
-        case (Cons(h, t), Cons(h2, t2)) => Some((ope(h(), h2()), (t(), t2())))
-        case _ => None
-      
-    )
+    ???
 
 end LazyList // enum ADT
 
@@ -240,27 +212,40 @@ object LazyList:
   // Exercise 10
 
   // Note: The type is incorrect, you need to fix it
-  lazy val fibs: LazyList[Int] = 
-    def fibn(n: Int, m: Int) : LazyList[Int] =
-      cons(n, fibn(m, n + m))
-    fibn(0, 1)
+  lazy val fibs: Any = 
+    ???
 
   // Exercise 11
 
-  def unfold[A,S](z: S)(f: S => Option[(A, S)]): LazyList[A] = 
-    (for 
-      (next, z2) <- f(z)
-    yield cons(next, unfold(z2)(f))).getOrElse(Empty)
-    
-    
-
+  def unfold[A,S](z: S)(f: S => Option[(A, S)]): LazyList[A] =
+    ???
 
   // Exercise 12
 
   // Note: The type is incorrect, you need to fix it
-  lazy val fibsUnfold: LazyList[Int] = 
-    unfold[Int, (Int,Int)]((0, 1))((n: Int, m: Int) => Some(n,(m, n + m)))
+  lazy val fibsUnfold: Any = ???
 
   // Scroll up for Exercise 13 to the enum
 
 end LazyList // companion object
+
+```
+
+
+
+#### Error stacktrace:
+
+```
+dotty.tools.dotc.core.SymDenotations$NoDenotation$.owner(SymDenotations.scala:2607)
+	scala.meta.internal.pc.SignatureHelpProvider$.isValid(SignatureHelpProvider.scala:83)
+	scala.meta.internal.pc.SignatureHelpProvider$.notCurrentApply(SignatureHelpProvider.scala:96)
+	scala.meta.internal.pc.SignatureHelpProvider$.$anonfun$1(SignatureHelpProvider.scala:48)
+	scala.collection.StrictOptimizedLinearSeqOps.dropWhile(LinearSeq.scala:280)
+	scala.collection.StrictOptimizedLinearSeqOps.dropWhile$(LinearSeq.scala:278)
+	scala.collection.immutable.List.dropWhile(List.scala:79)
+	scala.meta.internal.pc.SignatureHelpProvider$.signatureHelp(SignatureHelpProvider.scala:48)
+	scala.meta.internal.pc.ScalaPresentationCompiler.signatureHelp$$anonfun$1(ScalaPresentationCompiler.scala:435)
+```
+#### Short summary: 
+
+java.lang.AssertionError: NoDenotation.owner

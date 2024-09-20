@@ -1,3 +1,21 @@
+file:///C:/Users/thorc/OneDrive/Dokumenter/CS%201.%20Semester/Advanced%20Programming/2024-adpro/04-lazy-list/Exercises.scala
+### java.lang.NoClassDefFoundError: sourcecode/Name
+
+occurred in the presentation compiler.
+
+presentation compiler configuration:
+Scala version: 3.3.3
+Classpath:
+<HOME>\AppData\Local\Coursier\cache\v1\https\repo1.maven.org\maven2\org\scala-lang\scala3-library_3\3.3.3\scala3-library_3-3.3.3.jar [exists ], <HOME>\AppData\Local\Coursier\cache\v1\https\repo1.maven.org\maven2\org\scala-lang\scala-library\2.13.12\scala-library-2.13.12.jar [exists ]
+Options:
+
+
+
+action parameters:
+offset: 7793
+uri: file:///C:/Users/thorc/OneDrive/Dokumenter/CS%201.%20Semester/Advanced%20Programming/2024-adpro/04-lazy-list/Exercises.scala
+text:
+```scala
 // Advanced Programming, A. Wąsowski, IT University of Copenhagen
 // Based on Functional Programming in Scala, 2nd Edition
 
@@ -176,33 +194,16 @@ enum LazyList[+A]:
   // Exercise 13
 
   def mapUnfold[B](f: A => B): LazyList[B] =
-    unfold(this)(
-      _ match 
-        case Cons(h, t) => Some((f(h()), t()))
-        case Empty => None
-      )
+    ???
 
   def takeUnfold(n: Int): LazyList[A] =
-    unfold((this, n))((ls, m) =>
-      ls match 
-        case Cons(h, t) if m > 0 => Some((h(), (t(), n-1)))
-        case _ => None
-      )
+    ???
 
   def takeWhileUnfold(p: A => Boolean): LazyList[A] =
-    unfold(this)(
-      _ match 
-        case Cons(h, t) if p(h()) => Some((h(), t()))
-        case _ => None
-      )
+    ???
 
   def zipWith[B >: A, C](ope: (=> B, => B) => C)(bs: LazyList[B]): LazyList[C] =
-    unfold((this, bs))( 
-      _ match
-        case (Cons(h, t), Cons(h2, t2)) => Some((ope(h(), h2()), (t(), t2())))
-        case _ => None
-      
-    )
+    ???
 
 end LazyList // enum ADT
 
@@ -247,10 +248,11 @@ object LazyList:
 
   // Exercise 11
 
-  def unfold[A,S](z: S)(f: S => Option[(A, S)]): LazyList[A] = 
+  def unfold[A,S](z: S)(f: S => Option[(A, S)]): LazyList[A] =
+    val n, zee = 
     (for 
       (next, z2) <- f(z)
-    yield cons(next, unfold(z2)(f))).getOrElse(Empty)
+    yield (next, z2)).getOrElse(<E@@)
     
     
 
@@ -258,9 +260,53 @@ object LazyList:
   // Exercise 12
 
   // Note: The type is incorrect, you need to fix it
-  lazy val fibsUnfold: LazyList[Int] = 
-    unfold[Int, (Int,Int)]((0, 1))((n: Int, m: Int) => Some(n,(m, n + m)))
+  lazy val fibsUnfold: Any = ???
 
   // Scroll up for Exercise 13 to the enum
 
 end LazyList // companion object
+
+```
+
+
+
+#### Error stacktrace:
+
+```
+scala.meta.internal.tokenizers.XmlParser$Xml$.UnpStart(XmlParser.scala:44)
+	scala.meta.internal.tokenizers.XmlParser$Xml$.Unparsed(XmlParser.scala:43)
+	scala.meta.internal.tokenizers.XmlParser$Xml$.XmlContent(XmlParser.scala:39)
+	scala.meta.internal.tokenizers.XmlParser.$anonfun$XmlExpr$1(XmlParser.scala:25)
+	scala.meta.shaded.internal.fastparse.internal.RepImpls$.rec$4(RepImpls.scala:226)
+	scala.meta.shaded.internal.fastparse.internal.RepImpls$.rep$extension(RepImpls.scala:266)
+	scala.meta.shaded.internal.fastparse.package$ByNameOps$.rep$extension(package.scala:202)
+	scala.meta.internal.tokenizers.XmlParser.XmlExpr(XmlParser.scala:25)
+	scala.meta.internal.tokenizers.LegacyScanner.$anonfun$getXml$2(LegacyScanner.scala:823)
+	scala.meta.shaded.internal.fastparse.SharedPackageDefs.parseInputRaw(SharedPackageDefs.scala:69)
+	scala.meta.shaded.internal.fastparse.SharedPackageDefs.parseInputRaw$(SharedPackageDefs.scala:45)
+	scala.meta.shaded.internal.fastparse.package$.parseInputRaw(package.scala:6)
+	scala.meta.shaded.internal.fastparse.Parsed$Extra.trace(Parsed.scala:139)
+	scala.meta.internal.tokenizers.LegacyScanner.getXml(LegacyScanner.scala:826)
+	scala.meta.internal.tokenizers.LegacyScanner.fetchLT$1(LegacyScanner.scala:300)
+	scala.meta.internal.tokenizers.LegacyScanner.fetchToken(LegacyScanner.scala:307)
+	scala.meta.internal.tokenizers.LegacyScanner.scala$meta$internal$tokenizers$LegacyScanner$$nextToken(LegacyScanner.scala:195)
+	scala.meta.internal.tokenizers.LegacyScanner.nextTokenOrEof(LegacyScanner.scala:167)
+	scala.meta.internal.tokenizers.ScalametaTokenizer.loop$1(ScalametaTokenizer.scala:150)
+	scala.meta.internal.tokenizers.ScalametaTokenizer.uncachedTokenize(ScalametaTokenizer.scala:162)
+	scala.meta.internal.tokenizers.ScalametaTokenizer.$anonfun$tokenize$1(ScalametaTokenizer.scala:16)
+	scala.collection.concurrent.TrieMap.getOrElseUpdate(TrieMap.scala:962)
+	scala.meta.internal.tokenizers.ScalametaTokenizer.tokenize(ScalametaTokenizer.scala:16)
+	scala.meta.internal.tokenizers.ScalametaTokenizer$$anon$1.apply(ScalametaTokenizer.scala:313)
+	scala.meta.tokenizers.Api$XtensionTokenizeDialectInput.tokenize(Api.scala:22)
+	scala.meta.tokenizers.Api$XtensionTokenizeInputLike.tokenize(Api.scala:13)
+	scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionStringDocMeta.safeTokenize(ScalametaCommonEnrichments.scala:237)
+	scala.meta.internal.pc.completions.KeywordsCompletions$.reverseTokens$lzyINIT1$1(KeywordsCompletions.scala:49)
+	scala.meta.internal.pc.completions.KeywordsCompletions$.reverseTokens$1(KeywordsCompletions.scala:53)
+	scala.meta.internal.pc.completions.KeywordsCompletions$.contribute(KeywordsCompletions.scala:55)
+	scala.meta.internal.pc.completions.Completions.completions(Completions.scala:188)
+	scala.meta.internal.pc.completions.CompletionProvider.completions(CompletionProvider.scala:89)
+	scala.meta.internal.pc.ScalaPresentationCompiler.complete$$anonfun$1(ScalaPresentationCompiler.scala:155)
+```
+#### Short summary: 
+
+java.lang.NoClassDefFoundError: sourcecode/Name
