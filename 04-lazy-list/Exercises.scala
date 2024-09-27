@@ -175,7 +175,7 @@ enum LazyList[+A]:
 
   // Exercise 13
 
-  def mapUnfold[B](f: A => B): LazyList[B] =
+  def mapUnfold[B](f: A => B): LazyList[B] = 
     unfold(this)(
       _ match 
         case Cons(h, t) => Some((f(h()), t()))
@@ -185,7 +185,7 @@ enum LazyList[+A]:
   def takeUnfold(n: Int): LazyList[A] =
     unfold((this, n))((ls, m) =>
       ls match 
-        case Cons(h, t) if m > 0 => Some((h(), (t(), n-1)))
+        case Cons(h, t) if m > 0 => Some((h(), (t(), m-1)))
         case _ => None
       )
 
@@ -201,7 +201,6 @@ enum LazyList[+A]:
       _ match
         case (Cons(h, t), Cons(h2, t2)) => Some((ope(h(), h2()), (t(), t2())))
         case _ => None
-      
     )
 
 end LazyList // enum ADT

@@ -29,28 +29,39 @@ object RNG:
   // Exercise 1
 
   def nonNegativeInt(rng: RNG): (Int, RNG) =
-    ???
+    val (v, s) = rng.nextInt
+    (Math.abs(v), s)
 
   // Exercise 2
 
   def double(rng: RNG): (Double, RNG) = 
-    ???
+    val (v, s) = nonNegativeInt(rng)
+    (v.toDouble / Int.MaxValue, s)
 
   // Exercise 3
   
   // The return type is broken and needs to be fixed
-  def intDouble(rng: RNG): Any = 
-    ???
+  def intDouble(rng: RNG): ((Int, Double), RNG) = 
+    val (v, s) = nonNegativeInt(rng)
+    val (v2, s2) = double(s)
+    ((v, v2), s2)
 
   // The return type is broken and needs to be fixed
-  def doubleInt(rng: RNG): Any = 
-    ???
+  def doubleInt(rng: RNG): ((Double, Int), RNG) = 
+    val (v, s) = nonNegativeInt(rng)
+    val (v2, s2) = double(s)
+    ((v2, v), s2)
 
   // Exercise 4
 
   // The return type is broken and needs to be fixed
-  def ints(size: Int)(rng: RNG): Any = 
-    ???
+  def ints(size: Int)(rng: RNG): (List[Int], RNG) = 
+    if size < 1 then (Nil, rng)
+    else 
+      val (v, s) = rng.nextInt
+      val (l, s2) = ints(size - 1)(s)
+      (v :: l, s2)
+      
 
 
   type Rand[+A] = RNG => (A, RNG)
@@ -70,28 +81,37 @@ object RNG:
   // Exercise 5
 
   lazy val double2: Rand[Double] = 
-    ???
+    map(nonNegativeInt)(_.toDouble / Int.MaxValue)
 
   // Exercise 6
 
   def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = 
-    ???
+    k => 
+      val (a, s) = ra(k)
+      val (b, s2) = rb(s)
+      (f(a, b), s2)
 
   // Exercise 7
 
   def sequence[A](ras: List[Rand[A]]): Rand[List[A]] =
-    ??? 
+    ras.foldRight(unit(Nil))((r: Rand[A], ac:Rand[List[A]]) => 
+        map2[A, List[A], List[A]](r, ac)(_ :: _)
+      )
+
 
   def ints2(size: Int): Rand[List[Int]] =
-    ???
+    sequence(List.fill(size)(int))
 
   // Exercise 8
 
   def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] =
-    ???
+    k => 
+      val (v, s) = f(k)
+      g(v)(s)
+
 
   def nonNegativeLessThan(bound: Int): Rand[Int] =
-    ???
+    flatMap(int)(x => unit(Math.abs(x) % bound))
 
 end RNG
 
@@ -103,13 +123,26 @@ case class State[S, +A](run: S => (A, S)):
   // Search for the second part (sequence) below
   
   def flatMap[B](f: A => State[S, B]): State[S, B] = 
-    ???
+    State(s => 
+      val (a, s2) = this.run(s)
+      f(a).run(s2)
+      )
+      
 
   def map[B](f: A => B): State[S, B] = 
-    ???
+    State(s => 
+      val (a, s2) = this.run(s)
+      (f(a), s2)
+      )
+      
+
 
   def map2[B,C](sb: State[S, B])(f: (A, B) => C): State[S, C] = 
-    ???
+    State(s => 
+      val (a, s1) = this.run(s)
+      val (b, s2) = sb.run(s1)
+      (f(a, b), s2)
+    )
 
 
 object State:
@@ -133,21 +166,24 @@ object State:
   // Exercise 9 (sequence, continued)
  
   def sequence[S,A](sas: List[State[S, A]]): State[S, List[A]] =
-    ???
+    sas.foldRight(unit(Nil))((sa, ac) => sa.map2[List[A], List[A]](ac)(_ :: _))
 
   import adpro.lazyList.LazyList
 
   // Exercise 10 (stateToLazyList)
   
   def stateToLazyList[S, A](s: State[S,A])(initial: S): LazyList[A] =
-    ???
+    val (v, s2) = s.run(initial)
+    Cons(() => v, () => stateToLazyList(s)(s2))
 
   // Exercise 11 (lazyInts out of stateToLazyList)
   
   def lazyInts(rng: RNG): LazyList[Int] = 
-    ???
-
+    val s = State((k : RNG) => k.nextInt)
+    stateToLazyList(s)(rng)
+  
+  import RNG.* 
   lazy val tenStrictInts: List[Int] = 
-    ???
+    lazyInts(SimpleRNG(42)).take(10).toList
 
 end State
