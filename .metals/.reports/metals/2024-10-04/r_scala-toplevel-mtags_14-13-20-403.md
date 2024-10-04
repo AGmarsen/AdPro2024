@@ -1,4 +1,4 @@
-// Advanced Programming, A. Wąsowski, IT University of Copenhagen
+error id: file:///C:/Users/thorc/OneDrive/Dokumenter/CS%201.%20Semester/Advanced%20Programming/2024-adpro/06-testing/Exercises.scala:[1578..1581) in Input.VirtualFile("file:///C:/Users/thorc/OneDrive/Dokumenter/CS%201.%20Semester/Advanced%20Programming/2024-adpro/06-testing/Exercises.scala", "// Advanced Programming, A. Wąsowski, IT University of Copenhagen
 // Based on Functional Programming in Scala, 2nd Edition
 
 package adpro.lazyList
@@ -14,6 +14,7 @@ import org.scalacheck.Arbitrary.arbitrary
 /* Generators and helper functions */
 
 import LazyList.*
+import scala.runtime.LazyVals
 
 /** Convert a strict list to a lazy-list */
 def list2lazyList[A](la: List[A]): LazyList[A] = 
@@ -44,17 +45,10 @@ def infiniteErrorList[A: Arbitrary]: Gen[LazyList[A]] =
       case None => empty
   Gen.const(loop)
 
-def errorListOfSize[A](size: Int) : LazyList[A] = 
-  List.fill(size)(0).foldRight(empty)((_, acc) => cons(???, acc))
-
-def lightAtTheEndOfTheTunnel(size: Int) : LazyList[Boolean] = //list of error with a non-error at the end
-  List.fill(size)(0).foldRight(cons(true, empty))((_, acc) => cons(???, acc))
-
-def darkAtTheEndOfTheTunnel(size: Int) : LazyList[Boolean] = //list of non-error with an error at the end
-  List.fill(size)(0).foldRight(cons(???, empty))((_, acc) => cons(true, acc))
+def 
 
 def genPosInt: Gen[Int] = 
-  Gen.choose(0, 1000)
+  Gen.choose(0, 100)
 
 /* The test suite */
 
@@ -81,7 +75,7 @@ object LazyListSpec
   
   // Exercise 3
 
- // property("Ex03.01: take does not force any heads nor any tails of the lazy list") =
+  property("Ex03.01: take does not force any heads nor any tails of the lazy list") =
 
     given Arbitrary[LazyList[Int]] = Arbitrary(infiniteErrorList[Int])
     given Arbitrary[Int] = Arbitrary(genPosInt)
@@ -90,11 +84,11 @@ object LazyListSpec
 
   // Exercise 4
 
-  property("Ex04.01: take(n) does not force the (n+1)st head") = //this is kind of covered by Ex03
+  property("Ex04.01: take(n) does not force the (n+1)st head") = 
 
     given Arbitrary[Int] = Arbitrary(genPosInt)
 
-    forAll { (n: Int) => darkAtTheEndOfTheTunnel(n).take(n).toList; true}
+    forAll { (n: Int) => (list2lazyList(List.fill(n)(0)).append(cons(???, empty))).take(n); true}
   
   // Exercise 5
 
@@ -118,56 +112,22 @@ object LazyListSpec
 
   property("Ex07.01: l.drop(n) does not force any of the dropped elements") =
 
+    given Arbitrary[LazyList[Int]] = Arbitrary(genNonEmptyLazyList[Int])
     given Arbitrary[Int] = Arbitrary(genPosInt)
 
-    forAll { (n: Int) => lightAtTheEndOfTheTunnel(n).drop(n).toList.head }
+    forAll {(n: Int) => List.fill()}
 
   // Exercise 8
 
-  property("Ex08.01: l.map(identity) == l") =
-
-    given Arbitrary[LazyList[Int]] = Arbitrary(genNonEmptyLazyList[Int])
-
-    forAll { (s: LazyList[Int]) => s.map(identity).toList == s.toList }
-
   // Exercise 9
-
-  property("Ex09.01: map terminates on infinite lazy lists") =
-
-    given Arbitrary[LazyList[Int]] = Arbitrary(infiniteLazyList[Int])
-
-    forAll { (s: LazyList[Int]) => s.map(identity); true }
  
   // Exercise 10
 
-  property("Ex10.01: l.append(empty) == l") =
-    
-    given Arbitrary[LazyList[Int]] = Arbitrary(genNonEmptyLazyList[Int])
+")
+file:///C:/Users/thorc/OneDrive/Dokumenter/CS%201.%20Semester/Advanced%20Programming/2024-adpro/06-testing/Exercises.scala
+file:///C:/Users/thorc/OneDrive/Dokumenter/CS%201.%20Semester/Advanced%20Programming/2024-adpro/06-testing/Exercises.scala:50: error: expected identifier; obtained def
+def genPosInt: Gen[Int] = 
+^
+#### Short summary: 
 
-    forAll { (s: LazyList[Int]) => s.append(empty).toList == s.toList } :| "s.append(empty)" &&
-    forAll { (s: LazyList[Int]) => empty.append(s).toList == s.toList } :| "empty.append(s)"
-
-  property("Ex10.02: l.append(l2).size == l.size + l2.size") =
-    
-    given Arbitrary[LazyList[Int]] = Arbitrary(genNonEmptyLazyList[Int])
-
-    forAll { (s: LazyList[Int], s2: LazyList[Int]) => s.append(s2).toList.size == s.toList.size + s2.toList.size }
-
-  property("Ex10.03: l.append(l2) != l2.append(l) unless l == l2 for non-empty l and l2") =
-    
-    given Arbitrary[LazyList[Int]] = Arbitrary(genNonEmptyLazyList[Int])
-
-    forAll { (s: LazyList[Int], s2: LazyList[Int]) => s.toList == s2.toList || s.append(s2).toList != s2.append(s).toList }
-  
-  property("Ex10.04: l.append(l2).take(k) == l if k == l.size ") =
-    
-    given Arbitrary[LazyList[Int]] = Arbitrary(genNonEmptyLazyList[Int])
-
-    forAll { (s: LazyList[Int], s2: LazyList[Int]) => s.append(s2).take(s.toList.size).toList == s.toList }
-
-  property("Ex10.05: l.append(l2).drop(k) == l2 if k == l.size ") =
-    
-    given Arbitrary[LazyList[Int]] = Arbitrary(genNonEmptyLazyList[Int])
-
-    forAll { (s: LazyList[Int], s2: LazyList[Int]) => s.append(s2).drop(s.toList.size).toList == s2.toList }
-
+expected identifier; obtained def
