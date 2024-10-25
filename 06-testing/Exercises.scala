@@ -81,7 +81,7 @@ object LazyListSpec
   
   // Exercise 3
 
- // property("Ex03.01: take does not force any heads nor any tails of the lazy list") =
+  property("Ex03.01: take does not force any heads nor any tails of the lazy list") =
 
     given Arbitrary[LazyList[Int]] = Arbitrary(infiniteErrorList[Int])
     given Arbitrary[Int] = Arbitrary(genPosInt)

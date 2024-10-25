@@ -33,3 +33,5 @@ project/plugins/project/
 # scala-cli specific
 .bsp
 .scala-build
+
+.fake
