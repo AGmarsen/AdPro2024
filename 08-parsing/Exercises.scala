@@ -176,16 +176,16 @@ trait Parsers[ParseError, Parser[+_]]:
 
   extension [A](p1: Parser[A]) 
     def map2[B, C](p2: => Parser[B]) (f: (A, B) => C): Parser[C] =
-      ???
+      p1.flatMap(v => p2.map(v2 => f(v, v2)))
 
     def product[B] (p2: => Parser[B]): Parser[(A,B)] =
-      ???
+      p1.flatMap(v => p2.map(v2 => (v, v2)))
 
     // Write here: 
     //
-    // (1) ...
+    // (1) We keep A variable in order to handle all sorts of Parsers. Parse[int], Parse[string] etc.
     //
-    // (2) ...
+    // (2) We want p2 to be lazy, so we only look at it if we reach it. The parsing could stop before due to errors. 
 
     def **[B](p2: => Parser[B]): Parser[(A, B)] = 
       p1.product(p2)
@@ -203,38 +203,39 @@ trait Parsers[ParseError, Parser[+_]]:
 
   extension [A](p: Parser[A]) 
     def many: Parser[List[A]] = 
-      ???
+      p.map2(p.many)((a, b) => a :: b) | succeed(Nil)
 
   // Exercise 3
 
   extension [A](p: Parser[A])
     def map[B](f: A => B): Parser[B] =
-      ???
+      p.flatMap(v => succeed(f(v)))
 
   // Exercise 4
 
   // A better name would be: howManyA
   def manyA: Parser[Int] =
-    ???
+    char('a').*.map(_.size)
 
   // Exercise 5
   
   extension [A](p: Parser[A]) 
     def many1: Parser[List[A]] =
-      ???
+      p.map2(p.many)((a, l) => a :: l)
       
-  // Write here ...
+  // We want to be able to use it on other Parsers so we can have many1 on char('a') for instance which says one or more a's.
 
   // Exercise 6
 
   extension [A](p: Parser[A]) 
     def listOfN(n: Int): Parser[List[A]] =
-      ???
+      if n < 1 then succeed(Nil) 
+      else p.map2(p.listOfN(n-1))((a, b) => a :: b)
 
   // Exercise 7
 
   def digitTimesA: Parser[Int] =
-    ???
+    regex("""[0-9]""".r).flatMap(n => char('a').listOfN(n.toInt).map(_ => n.toInt))
 
   // For Exercise 8 read the code below until you find it.
 
@@ -415,7 +416,7 @@ object Sliceable
 
   /** Consume no characters and succeed with the given value */
   def succeed[A](a: A): Parser[A] =
-    ???
+    s => Success(a, 0)
 
   // For Exercise 9 continue reading below
 
@@ -475,13 +476,19 @@ object Sliceable
   // Exercise 9
  
   extension [A](p: Parser[A]) 
-    def or(p2: => Parser[A]): Parser[A] =
-      ???
+    def or(p2: => Parser[A]): Parser[A] = 
+      s => p(s) match
+        case Failure(_, _) => p2(s)
+        case x => x
+      
 
   // Exercise 10
 
   def regex(r: Regex): Parser[String] = (s: ParseState) =>
-    ???
+    r.findPrefixOf(s.input) match
+      case Some(m) => if s.isSliced then Slice(m.length()) else Success(m, m.length())
+      case None => Failure(s.loc.toError(s"$r did not match $s"), true)
+    
    
 end Sliceable
 
@@ -508,56 +515,75 @@ class JSONParser[ParseError, Parser[+_]](P: Parsers[ParseError,Parser]):
   // Exercise 11
 
   lazy val QUOTED: Parser[String] =
-    ???
+    regex(""""[^"]*"""".r).map(_.drop(1).dropRight(1))
 
   lazy val DOUBLE: Parser[Double] =
-    ???
+    regex("""(\+|-)?[0-9]+((.[0-9]+)?((e|E)(\+|-)?[0-9]+)?)?""".r).map(_.toDouble)
 
   lazy val ws: Parser[Unit] =
-    ???
+    regex("""\s+""".r).map(_ => ())
 
-  // Exercise 13
+  // Exercise 12
   
   lazy val jnull: Parser[JSON] =
-    ???
+    string("null") ** ws.? |* succeed(JNull)
 
   lazy val jbool: Parser[JSON] =
-    ???
+    (string("true") ** ws.? |* succeed(JBool(true))) |
+    (string("false") ** ws.? |* succeed(JBool(false)))
 
   lazy val jstring: Parser[JString] =
-    ???
+    (QUOTED *| ws.?).map(JString(_))
 
   lazy val jnumber: Parser[JNumber] =
-    ??? 
+    (DOUBLE *| ws.?).map(JNumber(_))
 
   // Exercise 13
 
   private lazy val commaSeparatedVals: Parser[List[JSON]] =
-    ???
-
+    (json ** (char(',') ** ws.? |* json *| ws.?).*).?.map(
+      _ match
+        case Some(h, t) => h :: t
+        case None => Nil)
+    
+    
   lazy val jarray: Parser[JArray] =
-    ???
+    (char('[') ** ws.? |* commaSeparatedVals *| ws.? *| char(']')).map(a => JArray(a.toVector))
 
   lazy val field: Parser[(String,JSON)] =
-    ???
+    QUOTED *| ws.? *| char(':') *| ws.? ** json *| ws.?
 
   private lazy val commaSeparatedFields: Parser[List[(String,JSON)]] =
-    ???
+    (field ** (char(',') ** ws.? |* field *| ws.?).*).?.map(
+      _ match
+        case Some(h, t) => h :: t
+        case None => Nil)
 
-  lazy val jobject: Parser[JObject] =
-    ???
+  lazy val jobject: Parser[JObject] = 
+    (char('{') ** ws.? |* commaSeparatedFields *| ws.? *| char('}')).map(a => JObject(a.toMap))
 
   lazy val json: Parser[JSON] =
-    ???
+    ws.? |* (jobject | jstring | jarray | jnull | jnumber | jbool)
 
   // Exercise 14 (no code)
+
+  /*
+  scala> JP.json.run(jsonTxt)
+  val res2: Either[adpro.parsing.ParseError, adpro.parsing.JSON] = Right(JObject(HashMap(Shares outstanding 
+  -> JNumber(8.38E9), Price -> JNumber(30.66), Company name -> JString(Microsoft Corporation), Related companies 
+  -> JArray(Vector(JString(HPQ), JString(IBM), JString(YHOO), JString(DELL), JString(GOOG))), Ticker -> JString(MSFT),
+   Active -> JBool(true))))
+  */
+
 
   // Exercise 15
   //
   // Write here:
   //
-  // (1) ...
+  // (1) We have defined the types which lets us compile the laws even though we don't necessarily have the implementations yet. 
   //
-  // (2) ...
+  // (2) With the laws defined before implementing, we can follow a test first based approach when implementing.
+      // Furthermore, it makes sure that regardless of how we choose to implement the parsers the laws will still work 
+      // because they are so generic. This ensures that all implementations follow the laws.
 
 end JSONParser
