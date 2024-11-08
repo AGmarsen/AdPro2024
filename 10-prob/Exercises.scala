@@ -16,7 +16,7 @@ given rng: spire.random.rng.SecureJava
 // test suite becomes, due to many samplings it runs. You may want to
 // disable tests temporarily to speed up work.
 
-val M = 42
+val M = 4000
 
 // For many exercises, you are (quietely) expected to run the queries
 // in the REPL in order to inspect probability values (or to print
@@ -53,7 +53,7 @@ def next(player: Player): Player = player match
 // The number of balls, including exactly 1 red ball, found in the run at the
 // begining of the game
 
-val BallsNo: Int = 8
+val BallsNo: Int = 11
 
 // Exercise 1.
 //
@@ -69,7 +69,7 @@ enum Ball:
   case Red, Black
 import Ball.*
 
-def pick (n: Int): Dist[Ball] = ???
+def pick (n: Int): Dist[Ball] = Bernoulli("Red", 1.toDouble / (n.toDouble + 1), Ball.Red, Ball.Black)
 
 //  Exercise 2. 
 //
@@ -88,7 +88,10 @@ def pick (n: Int): Dist[Ball] = ???
 
 
 def move(player: Player, n: Int): Dist[Player] = 
-  ???
+  pick(n).flatMap(_ match
+    case Red => Dirac(player)
+    case Black => move(next(player), n-1)
+  )
 
 // Exercise 3.
 //
@@ -109,14 +112,18 @@ def move(player: Player, n: Int): Dist[Player] =
 
 // Probability that Paula wins given Paula starts (the total no of balls: BallsNo)
 def probPaulaStarts: Double = 
-  ???
+  move(Player.Paula, BallsNo - 1).sample(M).pr(Player.Paula)
 
 // Probability that Paula wins given Peter starts (the total no of balls: BallsNo)
 def probPeterStarts: Double = 
-  ???
+  move(Player.Peter, BallsNo - 1).sample(M).pr(Player.Paula)
 
 //  Which strategy is beter for Paula? What if BallsNo == 9? 
-//  Write your answer here in a comment: ___
+//  Write your answer here in a comment: 
+//  With 8 balls the probality seems to be 50/50. 
+//  With 9 balls paula seems to have a 55/45 chance of winning if they start and vice versa.
+//  Just always start first
+
 
 
 // Exercise 4.
@@ -145,7 +152,7 @@ def probPeterStarts: Double =
 // We first create a uniform prior for the first mover:
 
 lazy val firstMover: Dist[Player] =
-  ???
+  Bernoulli("Starter", 0.5, Paula, Peter)
 
 // Now create a nullary function 'gameResult' that picks the first mover
 // randomly using 'firstMover' and then returns the probability distribution
@@ -158,28 +165,30 @@ lazy val firstMover: Dist[Player] =
 // prove useful. 
 
 def gameResult: Dist[(Player, Player)] = 
-  ???
+  firstMover.probDep(move(_, BallsNo - 1))
 
 // What is the probability that Paula wins with this uniform prior? Does it
 // agree with your intuition? Write the answer in a comment:
-// ____
+// If there is a 50% chance of starting, then there should be a 50% chance of winning
+// after running 'gameResult.sample(M).prMatching{case (_, Player.Paula) => }' I get around 50%
 
 // Now we are going to make the observation that Paula wins. 
 
 lazy val gameWonByPaula: Dist[(Player, Player)] = 
-  gameResult.matching { case (_,Paula) => }
+  gameResult.matching { case (_, Paula) => }
 
 // Calculate the probability that Paula started given that she won.
 // You will need to sample and use IData's .pr or .prMatching
 // methods.
 
 lazy val probPaulaStarted: Double = 
-  ???
+  gameWonByPaula._1.sample(M).pr(Paula)
 
 // Does this probability depend on the number of balls in the urn in the
 // urn being even or odd? What if it is even? What if it is odd?
 //
-// ____
+// With odd numbers the chance that Paula started is slightly higher than 50%. For 9 it is 55% and 11 it is around 54%
+// With even it is around 50%
 
 
 
@@ -212,7 +221,7 @@ val UpperBound = 6
 // Pigaro.uniform[A](name: String)(a : A*) :Element[A]
 
 lazy val blackBallsNo: Dist[Int] =
-  ???
+  Uniform(0, UpperBound - 1)
 
 // Now convert the prior distribution on the initial number of black balls in
 // the urn, into a distribution over the winning player.  Since the game is
@@ -222,12 +231,15 @@ lazy val blackBallsNo: Dist[Int] =
 // There is no test for this step of the computation.
 
 def outcome: Dist[(Int, Player)] = 
-  ???
+  blackBallsNo
+  .probDep("Starter")(_ => firstMover) //random starter
+  .probDep("Winner")((n, player) => move(player, n))
+  .map((n, _, winner) => (n, winner)) //don't keep starter
 
 // The following asserts that Paula has won.
 
 lazy val paulaWon: Dist[(Int, Player)] = 
-  ???
+  outcome.matching { case (_, Paula) => }
 
 // Now define the posterior probabilities for all size of the urn from 1 to
 // UpperBound. You can do this using IData.pr.
@@ -238,13 +250,19 @@ lazy val paulaWon: Dist[(Int, Player)] =
 // IData[T].prMatching  { case ... => }
 
 lazy val posteriorOdd: Double =
-  ???
+  paulaWon._1.condition(_ > 0).sample(M).pr(_ % 2 == 1)
 
 // Is the posteriorOdd greater than 1/2? Why?
 //
-// _____
-
+// Greater
+// bayes' theorem:
+// Let O := blackBallsNo was odd , Let W := paula won
+// assuming chance of winning is around 50% for odd number of black balls like asserted earlier
+// P(W|O) = 0.5
+// P(O) = 0.6 (since among the numbers 1-5 there are 3 odds)
+// P(W) = 0.5 (since the starting person is uniformly random)
+// P(O|W) = 0.5*0.6 / 0.5 = 0.6
 
 // Reflect whether the above estimation would take you more time analytically
 // or with a probabilistic programming library?
-
+// Definitely faster with programming ( ͡° ͜ʖ ͡°)
