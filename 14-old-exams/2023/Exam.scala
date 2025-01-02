@@ -73,7 +73,7 @@ object Streaming:
 
 
   def fViaFold (l: LazyList[Int]): Int = 
-    ???
+    l.foldRight(0)((e, ac) => ac + e % 2)
 
 end Streaming
 
@@ -116,7 +116,7 @@ object Parsing:
       .map { (h,t) => h::t }
 
   lazy val longestLine: Parser[Int] = 
-    ???
+    parser.map(l => l.map(_.size).max)
 
 
   /* QUESTION 3 ######################################################
@@ -128,7 +128,7 @@ object Parsing:
    */
 
   val allLinesTheSame: Parser[Boolean] = 
-    ???
+    parser.map(l => l.map(_.size).toSet.size == 1)
 
 end Parsing
 
@@ -181,10 +181,10 @@ object Game:
   type Strategy = Dist[Move]
 
   lazy val Alice: Strategy =
-    ???
+    Uniform("Alice")(Rock, Paper, Scissors)
 
   lazy val Bob: Strategy =
-    ???
+    Bernoulli("Bob", 0.5, Rock, Paper)
 
 
 
@@ -198,8 +198,9 @@ object Game:
    * Answering QUESTION 4 is not required to answer this one.
    */
   def game (player1: Strategy, player2: Strategy): Dist[Result] =
-    ???
-
+    Alice
+      .probDep("Game") (_ => Bob)
+      .map(winner(_, _))
 
 
   /* QUESTION 6 ######################################################

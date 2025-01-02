@@ -129,10 +129,12 @@ object PrimesAndLaziness:
    * - The first two prime numbers `p1`, `p2` that are 10 apart (p2 - p1 == 10)
    * - The second next pair `p3, p4` with the same property. */
 
-  def primesApart(n: Int): LazyList[(Int,Int)] = ???
+  def primesApart(n: Int): LazyList[(Int,Int)] = 
+    val a = primes.drop(1)
+    primes.zip(a).filter(t => (t._2 - t._1) == n)
 
-  lazy val (p1, p2): (Int, Int) = ???
-  lazy val (p3, p4): (Int, Int) = ???
+  lazy val (p1, p2): (Int, Int) = primesApart(10).headOption.getOrElse((0,0))
+  lazy val (p3, p4): (Int, Int) = primesApart(10).drop(1).headOption.getOrElse((0,0))
 
 
   
@@ -153,9 +155,9 @@ object PrimesAndLaziness:
 
   class primesApartTest 
     extends org.scalacheck.Properties("primesApartTest"): 
-
+    given Arbitrary[Int] = Arbitrary(Gen.choose(1, 20).suchThat(_ % 2 == 0))
     property("Elements in pairs returned by primesApart differ by n") = 
-      ???
+      forAll {(n: Int) => primesApart(n).take(5).toList.forall(t => t._2 - t._1 == n)}
 
   end primesApartTest
 
