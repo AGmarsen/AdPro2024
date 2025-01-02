@@ -198,8 +198,8 @@ object Game:
    * Answering QUESTION 4 is not required to answer this one.
    */
   def game (player1: Strategy, player2: Strategy): Dist[Result] =
-    Alice
-      .probDep("Game") (_ => Bob)
+    player1
+      .probDep("Game") (_ => player2)
       .map(winner(_, _))
 
 
@@ -216,7 +216,7 @@ object Game:
     = spire.random.rng.SecureJava.apply
 
   lazy val aliceFraction: Double = 
-    ???
+    game(Alice, Bob).sample(10000).pr(Some(P1))
 
 end Game
 
@@ -303,7 +303,7 @@ object RL:
      */
 
     property("00 Null update on null table 2x3") = 
-      ???
+      update(qZero(2, 3), 0, 0) (0.0, 0.0) === qZero(2, 3)
 
 
 
@@ -322,7 +322,12 @@ object RL:
      */
 
     property("01 Null update on null table 2x3") = 
-      ???
+      given Arbitrary[Q[Int, Int]] = Arbitrary(qGen(2, 3))
+      given Arbitrary[Int] = Arbitrary(Gen.choose(0, 6))
+      forAll{
+        (a:Int, b: Int, table: Q[Int, Int]) => 
+          update(table, a % 2, b % 3) (table.get(a % 2).get(b % 3), 0.0) === table
+        }
 
   end NullUpdatesSpec
 
