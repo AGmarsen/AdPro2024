@@ -81,7 +81,12 @@ object ExceptionalOptions:
    *
    * https://docs.scala-lang.org/scala3/book/fp-functional-error-handling.html */
 
-  def SafeTotal[A,B](f: A => B): A => Option[B] = ???
+  def SafeTotal[A,B](f: A => B): A => Option[B] = a => 
+    try 
+      Some(f(a))
+    catch case e: Throwable =>
+      None
+
 
 
 
@@ -90,7 +95,7 @@ object ExceptionalOptions:
    *
    * Notice that this question can be solved without answering Q1. */
 
-  def headOption[A](l: List[A]): Option[A] = ???
+  def headOption[A](l: List[A]): Option[A] = SafeTotal((k: List[A]) => k.head)(l)
 
 end ExceptionalOptions
 
@@ -173,9 +178,14 @@ object ApplesToApples:
   trait Better[T]: 
     /** True if and only if `left` is "better" than `right` */
     def leftBetter(left: T, right: T): Boolean 
-
+  
   case class Apple(weight: Int)
 
+
+  given Better[Apple] with //added this
+    def leftBetter(left: Apple, right: Apple): Boolean = //this
+      left.weight > right.weight //this
+  
   /** Returns a better of the two values provided. */
   def pickBetter[T: Better](left: T, right: T): T = 
     if summon[Better[T]].leftBetter(left, right) 
@@ -185,15 +195,18 @@ object ApplesToApples:
   val bigApple = Apple(1000)
   val smallApple = Apple(10)
 
-
+  extension[T: Better] (self: T) // added this
+    infix def betterThan(that: T): Boolean = //this
+      summon[Better[T]].leftBetter(self, that) //this
 
   /* Q6 (10%). The assertion below does not compile. Explain in English why it
    * does not compile and then add necessary code before the assertion so that
    * pickBetter can be used to pick a larger apple. */
 
-  // Write here ... 
+  // We have an abstract interface "Better" which has a function leftBetter 
+  // but without implementation (for Apple in particular)
 
-  // assert(pickBetter(bigApple, smallApple) == bigApple)
+  assert(pickBetter(bigApple, smallApple) == bigApple)
 
 
 
@@ -206,7 +219,7 @@ object ApplesToApples:
    * make it possible just for the Apple type (it will give some points).
    */
 
-  // assert(bigApple betterThan smallApple)
+  assert(bigApple betterThan smallApple)
 
 end ApplesToApples
 
@@ -242,7 +255,7 @@ object SizedLists:
 
   val l1 = Cons(41, l0) 
  
-  val l2 = ???
+  val l2 = Cons(3, Cons(1, Cons(4, Empty)))
 
 
   
@@ -262,7 +275,10 @@ object SizedLists:
    * the third element in the list. The function should only be allowed to be 
    * called on a list containing at least three elements. */
 
-  // def third[A, S] ...
+  def third[A, S](l: SizedList[A, Inc[Inc[Inc[S]]]]): A = 
+    head(tail(tail(l)))
+  
+
 
 
 
@@ -270,13 +286,17 @@ object SizedLists:
    * List of type `Sized[A, S]` for any `A` and any `S`. Use recursion and respond to
    * the question in English below. */
 
-  // def append[ ... ](a: ..., l: ...): ... = ???
+  def append[A, S](a: A, l: SizedList[A, S]): SizedList[A, Inc[S]] = l match
+    case Empty => Cons(a, Empty)
+    case Cons(h, t) => Cons(h, append(a, t)) // *MARK* Cons(h, -->append(a, t)<--)
 
   /* Mark the polymorphically recursive call in your solution. Describe in
    * English what the type parameters are instantiated to in this call. */
 
-  // Write here ... 
-
+  // If the function is called with SizedList[A, Inc[...[Inc[Null]]] 
+  // with n occurences of Inc then the recursive call is called 
+  // with SizedList[A, Inc[...[Inc[Null]]] with n-1 occurences of Inc
+  // SizedList[A, Inc[S]] -> SizedList[A, S]
 
 
   /* Q11. (10%) Revisit the ADT definition of `SizedList` in the beginning of
@@ -290,6 +310,14 @@ object SizedLists:
    * other).  Each example should violate the variance of exactly one type
    * parameter. */ 
 
-  // Write here ...
- 
+  // enum SizedList[+A, S]:
+  // A is covariant
+  // S is invariant
+
+  //Correct: SizedList[Nothing, Null] <: SizedList[Any, Null]
+
+  //Incorrect: SizedList[Any, Null] <: SizedList[Nothing, Null]
+
+  //Incorrect: SizedList[Any, Inc[Null]] <: SizedList[Any, Null]
+  
 end SizedLists
