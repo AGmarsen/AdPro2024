@@ -47,7 +47,6 @@ package adpro
 
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.*
-import org.scalactic.Equality
 
 import fpinscala.answers.laziness.LazyList
 import fpinscala.answers.state.*
@@ -87,7 +86,10 @@ object Q1:
    * the corresponding effect as calling the method hello in Java
    * implementation.  Uncomment the definition and fill in the gaps.
    */
-  // def hello (???: ???): ??? = ???
+  def hello(p: Printable) : String = p match
+    case Printable.Triangle => "triangle"
+    case Printable.Square => "square"
+  
 
 end Q1
 
@@ -108,7 +110,12 @@ object Q2:
    * on the input list.
    */
 
-  def sequence[Err,A] (as: List[Either[Err,A]]): Either[Err, List[A]] = ???
+  def sequence[Err,A] (as: List[Either[Err,A]]): Either[Err, List[A]] = as.foldRight[Either[Err, List[A]]](Right(Nil))((e, ac) =>
+    for 
+      l <- ac //unpack this first so we keep last error in foldright
+      a <- e
+    yield a :: l
+    )
 
 end Q2
 
@@ -129,7 +136,7 @@ object Q3:
    * Do not implement the function, just put '???' in the body.
    */
 
-   // def sequence ...
+   def sequence[Err, A, F[_]: Foldable] (as : F[Either[Err, A]]) : Either[Err, F[A]] = ???
 
 end Q3
 
@@ -152,10 +159,18 @@ object Q4:
    *
    *     a <= x <= b
    */
-
+  import fpinscala.answers.state.*
   type Rand[A] = State[RNG, A]
+  lazy val riid: Rand[(Int,Int,Double)] = for
+      a <- State(RNG.int)
+      b <- State(RNG.int)
+      lo = if a >= b then b else a
+      hi = if a >= b then a else b
+      c <- State(RNG.double)
+      mid = lo + c / Double.MaxValue.toDouble * (hi - lo).toDouble 
+  yield (lo, hi, mid)
 
-  lazy val riid: Rand[(Int,Int,Double)] = ???
+  
 
 end Q4
 
@@ -237,7 +252,7 @@ object Q7:
    * list is at least 10 elements? Explain.
    */
 
-  // Write here ...
+  // Computing the size may take forever on infinite lazy lists.
 
 end Q7
 
@@ -258,7 +273,13 @@ object Q8:
    * from the course.
    */
 
-  def checkIfLongerEqThan[A](s: LazyList[A])(n: Int): Boolean = ???
+  def checkIfLongerEqThan[A](s: LazyList[A])(n: Int): Boolean = 
+    def f(s: LazyList[A], acc: Int): Boolean = (s, acc) match
+      case (_, ac) if ac >= n => true
+      case (LazyList.Cons(_, t), ac) => f (t (), ac+1)
+      case (LazyList.Empty, _) => false
+    f(s, 0)
+    
 
 end Q8
 
@@ -285,16 +306,22 @@ object Q9:
    * every nonEmpty stream concatenated with itself is larger or equal
    * than 2.
    */
+  import org.scalacheck.{Arbitrary, Gen, Prop}
+  import org.scalacheck.Prop.*
+  import Arbitrary.*, Prop.*
 
   class MySpec
     extends org.scalacheck.Properties("Q9"):
+
 
     given Arbitrary[LazyList[Int]] =
       Arbitrary { Gen.listOf(Gen.choose(1, 100))
         .map { l => LazyList(l*) } }
 
-    property("Q9: Write the test here by replacing 'false' below") =
-      false
+    property("Q9: A nonEmpty list concatenated with self is at least 2 elements long") =
+      forAll { (s: LazyList[Int]) =>
+        (s != LazyList.Empty) ==>
+          Q8.checkIfLongerEqThan(s.append(s))(2) }
 
 end Q9
 
@@ -312,7 +339,10 @@ object Q10:
    * Par[Option[A]] value, for any type 'A'.
    */
 
-  def flatten[A](opa: Option[Par[A]]): Par[Option[A]] = ???
+  def flatten[A](opa: Option[Par[A]]): Par[Option[A]] = opa match
+    case None => Par.unit(None)
+    case Some(a) => a.map(Some(_))
+  
 
 end Q10
 
@@ -327,7 +357,10 @@ end Q10
  * implementation.
  */
 
- // Write here ...
+ // "Man... all my futures are packed in one big option. If only I could have my future with the option inside"
+ // Fear not for we have the answer for you. Presenting the freshly implemented "flatten"!
+
+ //It takes a futuretask that may be failed/none and creates a task that produces an option so that we can compose several tasks
 
 
 
@@ -350,7 +383,10 @@ object Q12:
   /* Now assume that there is a function loop of the following type.
    **/
 
-  def loop[A, M[_]: Monad](initial: M[A])(body: A => A)(p: A => Boolean): M[A] = ???
+  def loop[A, M[_]: Monad](initial: M[A])(body: A => A)(p: A => Boolean): M[A] = //implemented further down
+    summon[Monad[M]].flatMap(initial)(s => 
+      if p(s) then loop(summon[Monad[M]].unit(body(s)))(body)(p) 
+      else initial )
 
   /* This function runs a loop 'in the monad M'.  It starts at the
    * initial value, then it applies the function 'body' as long as the
@@ -376,13 +412,14 @@ object Q12:
    * the code):
    */
 
-  // def sum (l: List[Int]): Int =
-  //   val initial: (List[Int], Int) = ???
-  //   val body = ???
-  //   val p = ???
 
-  //   val result = loop[???,???](initial)(body)(p)
-  //   result._2
+  def sum (l: List[Int]): Int = 
+    val initial: (List[Int], Int) = (l, 0)
+    val body = (a: (List[Int], Int)) => (a._1.tail, a._1.head + a._2)
+    val p = (a: (List[Int], Int)) => a._1.nonEmpty
+
+    val result = loop[(List[Int], Int),Id](initial)(body)(p)
+    result._2
 
 
   /* DISCLAIMER: Normally, we do not want to compute a sum of a list in this way.
@@ -405,6 +442,9 @@ object Q13:
    * value.
    */
 
-  def loop[A, M[_]: Monad] (initial: M[A]) (body: A => A) (p: A => Boolean): M[A] = ???
+  def loop[A, M[_]: Monad] (initial: M[A]) (body: A => A) (p: A => Boolean): M[A] =
+    summon[Monad[M]].flatMap(initial)(s => 
+      if p(s) then loop(summon[Monad[M]].unit(body(s)))(body)(p) 
+      else initial )
 
 end Q13

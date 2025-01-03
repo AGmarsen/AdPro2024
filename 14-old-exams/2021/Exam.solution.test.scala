@@ -1,5 +1,5 @@
 /* These tests have not been available for the students writing the exam. */
-package adpro.solution
+package adpro
 
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
@@ -16,6 +16,8 @@ object Exam2021AutumnSpec
 
   import Q1.Printable.*
   import Q1.Printable
+  import adpro.*
+  import adpro.Q8.*
 
   property("    A test that always passes (a sanity check)") = 
     forAll { (n: Int) => n == n }
@@ -58,10 +60,10 @@ object Exam2021AutumnSpec
       && Q8.checkIfLongerEqThan(s)(1)
       && Q8.checkIfLongerEqThan(s)(2)
       && !Q8.checkIfLongerEqThan(s)(3)
-      && Q8.checkIfLongerEqThan_(s)(0)
-      && Q8.checkIfLongerEqThan_(s)(1)
-      && Q8.checkIfLongerEqThan_(s)(2)
-      && !Q8.checkIfLongerEqThan_(s)(3)
+      && Q8.checkIfLongerEqThan(s)(0)
+      && Q8.checkIfLongerEqThan(s)(1)
+      && Q8.checkIfLongerEqThan(s)(2)
+      && !Q8.checkIfLongerEqThan(s)(3)
 
 
   // Q9

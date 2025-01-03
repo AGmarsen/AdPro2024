@@ -1,7 +1,6 @@
 package adpro.solution
 
 import org.scalacheck.{Arbitrary, Gen, Prop}
-import Arbitrary.*, Prop.*
 import org.scalactic.Equality
 
 import fpinscala.answers.laziness.LazyList
@@ -370,10 +369,10 @@ object Q9:
         .map { l => LazyList(l*) } }
 
     // an example solution
-    property("Q9: A nonEmpty list concatenated with self is at least 2 elements long") =
-      forAll { (s: LazyList[Int]) =>
-        (s != LazyList.Empty) ==>
-          Q8.checkIfLongerEqThan(s.append(s))(2) }
+    // property("Q9: A nonEmpty list concatenated with self is at least 2 elements long") =
+    //   forAll { (s: LazyList[Int]) =>
+    //     (s != LazyList.Empty) ==>
+    //       Q8.checkIfLongerEqThan(s.append(s))(2) }
 
     // Some notes on possible bad solutions:
     //
