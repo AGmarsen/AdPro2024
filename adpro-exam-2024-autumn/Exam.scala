@@ -283,7 +283,9 @@ object IntervalParser2:
    */
 
   // Write your solution here (below)
-  // ...
+  // extension[P: Parser] (p: P) // added this
+  //   def intBetween(low: Int, high: Int): Parser[Int] = 
+  //     summon[Parser[P]].intBetween(low, high)
 
 end IntervalParser2
 
@@ -301,7 +303,8 @@ end IntervalParser2
  */
 
 // Add your answer here (bnlow)
-// ...
+abstract trait Member[F[+_]]:
+  def contains[A] (fa: F[A], a: A): Boolean
 
 
 
@@ -352,7 +355,23 @@ object FullyAbstractTrains:
    * latter requires using the solution of Q10.
    */
 
-  // trait ReservationSystem ... // your solution here
+  trait ReservationSystem[Error, Passenger, Train, PaymentId]:
+    type CreditCard
+    type Amount
+    type TicketNumber
+    // Return paymentId if successfully charged the amount; otherwise error
+    def pay(creditCard: CreditCard, amount: Amount): Either[Error, PaymentId]
+
+    // Create a reservation, returns a ticket number if successful, or an error
+    def reserve(passenger: Passenger, train: Train, paymentId: PaymentId)
+      : Either[Error, TicketNumber]
+
+    // Confirms the validity of the payment with a broker.
+    // True if the paymentId is valid
+    def validate (paymentId: PaymentId): Boolean
+
+    // Returns a set of passengers on the train (a manifest)
+    def paxOnTrain[Manifest[+_]: Member](train: Train): Manifest[Passenger]
 
 
 
@@ -374,14 +393,25 @@ object FullyAbstractTrains:
      * inside the trait above.
      **/
 
-    def law1: Prop = ???
+    def law1(using Arbitrary[CreditCard], Arbitrary[Amount], 
+      Arbitrary[PaymentId]): Prop = 
+        forAll {(c: CreditCard, a: Amount) => 
+          pay(c, a) match 
+            case Left(_) => true //only check successful payments
+            case Right(p) => validate(p)
+            }
 
     /* Law 2. A succesful reservation puts the passenger on the requested
      * train (relates `reserve` with `paxOnTrain`). If `reserve` succeeds
      * then paxOnTrain returns a result containing the passenger.)
      */
 
-    def law2: Prop = ???
+    def law2(using Arbitrary[Passenger], Arbitrary[Train], Arbitrary[PaymentId]) = ???
+      // Member[Manifest[Passenger]]): Prop = ???
+      // forAll {(p: Passenger, t: Train, pid: PaymentId) => reserve(p, t, pid) match
+      //   case Left(_) => true //only check succesful reservations
+      //   case Right(_) => summon[Member[Manifest]].contains(paxOnTrain(t), p)
+      // }
 
 end FullyAbstractTrains
 
