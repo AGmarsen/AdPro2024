@@ -140,7 +140,7 @@ object Good:
    */
 
   def goodPairsHotCurry[A]: List[A] => (A => A => Boolean) => Boolean = 
-    l => curriedNested[A, A, Boolean, Boolean](goodPairsCurried[A](l))
+    l => curriedNested(goodPairsCurried(l))
     
 
 end Good
@@ -184,6 +184,8 @@ object MultivariateUniform:
   */
 
   def multUni[T] (n: Int, values: T*): Dist[List[T]] = ???
+    // val d = Pigaro.uniform("")(values)
+    // d.map(_ => d.sample(n))
     
 
 end MultivariateUniform
@@ -215,10 +217,14 @@ object Gens:
 
 
   def genEither[A,B]: Gen[Either[A,B]] = ???
-    // for 
-    //   a <- summon[Option[A]]
-    //   b <- summon[Option[B]]
-    // yield Either(a, b)
+    // implicit val a = Arbitrary[Option[A]]
+    // implicit val b = Arbitrary[Option[B]]
+    // gen { (a, b) =>
+    //   (a, b) match
+    //     case (Some(a), _) => Left(a)
+    //     case (_, Some(b)) => Right(b)
+    //     case _ => Left(a)
+    // }
       
 end Gens
 
@@ -283,7 +289,7 @@ object IntervalParser2:
    */
 
   // Write your solution here (below)
-  // extension[P: Parser] (p: P) // added this
+  // extension[P: Parser] (p: P)
   //   def intBetween(low: Int, high: Int): Parser[Int] = 
   //     summon[Parser[P]].intBetween(low, high)
 
