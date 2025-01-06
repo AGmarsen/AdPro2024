@@ -76,7 +76,7 @@ object Good:
    */
 
   def goodPairs [A] (l: List[A], good: (A,A) => Boolean): Boolean =
-    ???
+    l.zip(l.tail).foldRight(true)((e, ac) => good(e._1, e._2) && ac)
 
 
 
@@ -99,8 +99,14 @@ object Good:
    * assume you have the solution for Q1.
    */
 
+  def curried[A, B, C](f: (A, B) => C): A => (B => C) = //The compiler did not recognize "curried" or uncurried
+    (A) => (B) => f(A, B)
+
+  def uncurried[A, B, C](f: A => B => C): (A, B) => C = 
+    (A, B) => f(A)(B)
+
   def goodPairsCurried[A]: List[A] => ((A,A) => Boolean) => Boolean =
-    ???
+    curried(goodPairs)
 
 
 
@@ -115,8 +121,9 @@ object Good:
    * previous questions.
    */
 
-  def curriedNested [A, B, C, D] (f: ((A,B) => C) => D)
-    : (A => B => C) => D = ???
+  def curriedNested [A, B, C, D] (f: ((A,B) => C) => D) : (A => B => C) => D = 
+    (g: A => B => C) => f((a, b) => g(a)(b))
+    
 
 
 
@@ -132,8 +139,8 @@ object Good:
    * previous questions.
    */
 
-  def goodPairsHotCurry[A]: List[A] => (A => A => Boolean) => Boolean =
-    ???
+  def goodPairsHotCurry[A]: List[A] => (A => A => Boolean) => Boolean = ???
+    
 
 end Good
 
