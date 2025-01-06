@@ -139,7 +139,8 @@ object Good:
    * previous questions.
    */
 
-  def goodPairsHotCurry[A]: List[A] => (A => A => Boolean) => Boolean = ???
+  def goodPairsHotCurry[A]: List[A] => (A => A => Boolean) => Boolean = 
+    l => curriedNested[A, A, Boolean, Boolean](goodPairsCurried[A](l))
     
 
 end Good
@@ -158,8 +159,15 @@ object MultivariateUniform:
    * given, an instance) of Monad for Dist.
    */
 
-  // given ... (add answer here)
+  //given an instance x of Dist it must be Associative in flatmap 
+  // such that x.flatMap(f).flatMap(g) == x.flatMap(a => f(a).flatMap(g)
+  // and have an identity unit such that x.flatMap(unit) == x and unit(x).flatMap(f) == f(x)
 
+
+// Exercise 15
+
+
+// Exercise 16 (tests for Exercise 15, written by the student)
 
  /* QUESTION 6 #####################################################
   *
@@ -176,6 +184,7 @@ object MultivariateUniform:
   */
 
   def multUni[T] (n: Int, values: T*): Dist[List[T]] = ???
+    
 
 end MultivariateUniform
 
@@ -204,8 +213,13 @@ object Gens:
    * exercise. Non-recusive solutions are also possible.
    */
 
-  def genEither[A,B]: Gen[Either[A,B]] = ???
 
+  def genEither[A,B]: Gen[Either[A,B]] = ???
+    // for 
+    //   a <- summon[Option[A]]
+    //   b <- summon[Option[B]]
+    // yield Either(a, b)
+      
 end Gens
 
 
@@ -230,7 +244,10 @@ object IntervalParser1:
    * included in the exam project.
    */
 
-  def intBetween (low: Int, high: Int): Parser[Int] = ???
+  def intBetween (low: Int, high: Int): Parser[Int] = 
+    regex("""(\+|-)?[0-9]+""".r).flatMap(_.toInt match 
+      case x if x >= low && x <= high => succeed(x)
+      case _ => fail("Not a number in interval"))
 
 end IntervalParser1
 
